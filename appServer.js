@@ -5,19 +5,9 @@ var server = require('http').Server(app);
 var bodyParser = require('body-parser');
 
 var fs = require('fs');
-//var banque = require('./banque');
-
-/*
-function isInt(value) {
-  return !isNaN(value) &&
-         parseInt(Number(value)) == value &&
-         !isNaN(parseInt(value, 10));
-}
-
-*/
 
 
-// Si on lance l'application Angular.js avec grunt serve
+
 app.all('*', function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -27,7 +17,7 @@ app.all('*', function(req, res, next) {
 
 
 
-app.use(bodyParser.json()); // pour parser du JSON
+app.use(bodyParser.json()); 
 
 
 app.get('/listAllContacts', function(req, res) {
