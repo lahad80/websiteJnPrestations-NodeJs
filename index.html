@@ -1,0 +1,870 @@
+
+
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+	
+
+		<meta charset="utf-8">
+		<title>JN PRESTATIONS: Entreprise de nettoyage et d'espaces verts à Toulouse.</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">		
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+		
+		
+		<script>
+			var app = angular.module("jn-prestations_App",[]);
+			app.controller("jn-prestations_Ctrl", function($scope, $http, $window, $interval){			
+				function Customer(logoUrl, adr){
+					this.logoUrl =  logoUrl;
+					this.adr = adr;
+					
+					
+					this.getAdress = function(){
+						return this.adr;
+					}
+				}
+ 				
+				
+				$scope.customersArray = [new Customer('images/immoDeFrance.png', '48 allées Jean Jaures 31000 Toulouse'),
+										  new Customer('images/foncia.png', '4 avenue Galilée 31131 Balma'),
+										  new Customer('images/cabinetBedin.png', '7 av des minimes 31200 Toulouse'),
+										  new Customer('images/crisImmo.png', '12 Bd de la Gare 31500 Toulouse')
+										  ];
+				
+				var custTempo = [], i = 0;
+				function rotateCust(){					
+					for(i = 0; i < $scope.customersArray.length; i++){
+						if(i===0){
+							custTempo[i] = $scope.customersArray[$scope.customersArray.length-1];
+						}
+						else{
+							custTempo[i] = $scope.customersArray[i-1];
+						}
+					}
+					for(i = 0; i < $scope.customersArray.length;i++){
+						$scope.customersArray[i] = custTempo[i];
+					}				
+				}
+				$interval(rotateCust, 3000);
+				
+				
+				$scope.purposes = ['Demande de devis.', 'Proposition de partenariat.', 'Autre'];
+				
+				$scope.firstNameRequired = "Le nom de famille est obligatoire !";
+				$scope.firstNameFormatInvalid = "Le nom ne doit contenir que des lettres !";
+				$scope.phoneNumberRequired = "Le numéro de téléphone est requis !";
+				$scope.phoneNumberFormatInvalid = "Il faut 10 chiffres !";
+				$scope.emailRequired = "L'email doit être renseigné !";
+				$scope.emailFormatInvalid ="Le format de l'email est incorrect !";
+				
+				
+				
+				
+				$http.get("http://localhost:3000/listAllContacts")
+					.then(function ok(response) {
+						$scope.users = response.data.contacts;
+				});
+				
+			
+				
+				$scope.user = {};
+				$scope.submit_form = function(){
+					$scope.success = false;
+					$scope.failure = false;
+					$http({
+						method:'POST', 
+						url:'http://localhost:3000/newContact',
+						data:{"familyName":$scope.user.familyName,
+							"firstName":$scope.user.firstName,
+							"phoneNumber":$scope.user.phoneNumber,
+							"email":$scope.user.email,
+							"status":$scope.user.status,
+							"purpose":$scope.user.purpose,
+							"message":$scope.user.message }
+						//data:{"theUser":$scope.user}
+					}).then(function ok(res){
+								$scope.successOrFailureMessage = 'Bonjour ' +$scope.user.familyName+ ', votre message a bien été envoyé et sera traité dans les plus bréfs délais.';
+								$scope.success = true;
+								$scope.reset_form();
+								$scope.users = res.data.contacts;
+						}, function pb(res){
+								$scope.successOrFailureMessage = 'Oups, un problème est survenu au moment de l\'envoi du message';
+								$scope.failure = true;
+					});	
+					
+				};
+				
+				
+				
+				$scope.deleteContact = function(id){
+					$http.delete('http://localhost:3000/deleteContact/'+id)
+						.then(function ok(res){
+						$scope.users = res.data.contacts;
+					});
+				}
+				
+				
+				$scope.reset_form = function(){
+					$scope.user.familyName = "";
+					$scope.user.firstName = "";
+					$scope.user.phoneNumber = "";
+					$scope.user.email = "";
+					$scope.user.status = "";
+					$scope.user.purpose = "";
+					$scope.user.message = "";
+					$scope.contactForm.$setPristine();
+				};
+	
+		
+				$scope.admin = {
+						login:"",
+						password:""
+				};
+				
+				$scope.process_adminForm = function(){
+					$http.get("http://localhost:3000/credentials")
+						.then(function(response) {
+							if($scope.admin.login == response.data.login && $scope.admin.password == response.data.password)
+							{
+								$scope.contactsTableCheckbox = true;
+								document.getElementById("closeAdminForm").click();
+								
+							}else{
+								$window.alert('Login ou mot de passe incorrect !');	
+							}
+					});
+				};
+				
+				$scope.reset_adminForm = function(){
+					$scope.admin.login = "";
+					$scope.admin.password = "";
+				};
+				
+			});
+		</script>
+		
+		<script>
+			$(document).ready(function(){
+
+				// this function scrolls the page to the indicated location and speed 
+				function goTo(the_location, speed){
+					var the_id = $(the_location);
+					$('html,body').animate({scrollTop: the_id.offset().top}, speed);
+					return false;
+				}
+
+				$('#indexMenu').click(function(){
+					goTo('#indexAnchor', 1000);
+				});
+				$('#servicesMenu').click(function(){
+					goTo('#servicesAnchor', 1000);
+				});
+				$('#qualityMenu').click(function(){
+					goTo('#qualityAnchor', 1000);
+				});
+				$('#contactMenu').click(function(){
+					goTo('#contactAnchor', 1000);
+				});
+			
+				
+				$('.textInput').mouseenter(function(){
+					$(this).css('background-color', '#d7ffff');
+				});
+				$('.textInput').mouseleave(function(){
+					$(this).css('background-color', 'white');
+				});
+				
+
+				function changeMenuDecoration(){
+					var currentPosition = $(document).scrollTop();
+					
+					if(currentPosition < $('#servicesAnchor').position().top-500 ){
+						$('ul li').css('background','#405580');
+						$('#indexMenu').css('background','#d7c38d');
+					}
+					if(currentPosition >= $('#servicesAnchor').position().top-500){
+						$('ul li').css('background','#405580');
+						$('#servicesMenu').css('background','#d7c38d');
+					}
+					if(currentPosition >= $('#qualityAnchor').position().top-500 ){
+						$('ul li').css('background','#405580');
+						$('#qualityMenu').css('background','#d7c38d');
+					}
+					if(currentPosition >= $('#contactAnchor').position().top-500 ){
+						$('ul li').css('background','#405580');
+						$('#contactMenu').css('background','#d7c38d');
+					}
+				}
+				
+				changeMenuDecoration();
+				
+				$(window).scroll(function(){
+					changeMenuDecoration();
+				});
+				
+				
+				$('[data-toggle="popover"]').popover();
+	
+			});
+			
+		</script>
+		
+
+	    <script>
+			function initMap() {
+			  var myCenter = new google.maps.LatLng(43.694286,1.443076);
+			  var mapCanvas = document.getElementById("map");
+			  var mapOptions = {center: myCenter, zoom: 16};
+			  var map = new google.maps.Map(mapCanvas, mapOptions);
+			  var marker = new google.maps.Marker({position:myCenter});
+			  marker.setMap(map);
+			  google.maps.event.addListener(marker,'click',function() {
+				var infowindow = new google.maps.InfoWindow({
+				  content:"JN PRESTATIONS <br> 11 avenue du général DE GAULLE <br> 31780 Castelginest "
+				});
+			  infowindow.open(map,marker);
+			  });
+			}
+		</script>
+			  
+		/*  
+			map = new google.maps.Map(document.getElementById('map'), {
+			  center: {lat: 43.694493, lng: 1.447750},
+			  zoom: 17
+			});
+		*/
+      
+   
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAjqYeTRiQvp8UgKSKNMeCVRy66488-k_A&callback=initMap"
+    async defer></script>
+		
+		
+		<style type="text/css">					
+			*
+			{
+				margin: 0;
+				border: 0;
+				padding: 0;
+			}
+			.container{
+				background: #fafafa;
+				padding: 0;
+			}
+			body
+			{
+				font-family: Arial, Helvetica, sans-serif;
+				color: #555;
+				background: #A9A9A9;
+				margin: 15px;
+			}
+				
+			
+			#slideShow
+			{
+				width: 100%;
+				height: 150px;
+				padding: 10px;
+			}
+			#slideShow>div
+			{
+				position: absolute;
+			}
+			h1
+			{	
+				text-align: center;
+				font-size: 180%;
+				padding: 2% 0;
+			}
+			h4
+			{
+				text-align: center;
+			}
+			h5
+			{
+				background-color: gray;
+				color: white;
+				text-align: center;
+				height: 22px;
+			}
+			p
+			{
+				padding: 1%;
+			}
+			img
+			{
+				text-align: center;
+				max-width: 100%;
+				height: auto;
+				width: auto;
+			}
+			a
+			{
+				color: #FFF;
+				text-decoration: none;
+				font-weight: bold;
+			}
+			a:hover
+			{
+				background-color: white;
+				text-decoration: underline;
+			}
+			
+			.navbar-brand
+			{
+			
+				width: 350px;
+				height: 90px;
+				float: left;
+				background: url(images/logo) no-repeat center;		
+			}
+			nav
+			{
+				float: right;
+				padding: 20px 20px 20px 0;
+				font-size: 16px;
+			}
+			ul
+			{
+				list-style: none;
+			}
+			nav  ul li
+			{
+				display: inline-block;
+				float: left;
+				padding: 10px;
+				height:60px;
+			}
+			.servicesArticle
+			{
+				width: 45%;
+				float: left;
+				margin: 2% 2%;
+				text-align: left;
+			}
+			#servicesArticleId
+			{
+				margin-left: 4%;
+			}
+			.qualityArticle
+			{
+				width: 28%;
+				float: left;
+				margin: 2% 2%;
+				text-align: left;
+			}
+			#lobby
+			{
+				float: right;
+			}
+			#hedge
+			{
+				float: left;
+				margin-right: 20px;
+			}
+			
+			#cleaning, #greenSpaces
+			{
+				width: 70%;
+				height: 50%;
+			}
+			#proximity, #quality, #ecology
+			{
+				margin-left: 25%;
+				width: 30%;
+				height: 25%;
+			}
+			#contact
+			{
+				width: 15%;
+				height: 10%;
+				float: right;
+			}
+			.corporate
+			{
+				color: #0000e8;
+			}
+			.corporateInfos, .warning, .corporate
+			{
+				font-weight: bold;
+			}
+			
+			.redStar, .error
+			{
+				color: red;
+			}
+			legend
+			{
+				color: blue;
+			}
+			.warning
+			{
+				margin-left: 35%;
+			}
+			form
+			{
+				width: 100%;		
+			}
+			fieldset
+			{
+				background-color: #e5e5e5;
+				border: 2xp solid #e5e5e5;
+				padding: 3px;
+			}
+			.textInput
+			{
+				margin-top: 4px;
+				width: 45%;
+				height: 40px;
+				border-radius: 4px;
+				border: 2px solid #ccc;
+			}
+			.buttonInput
+			{
+				
+				background-color: #d7ffff;
+				height: 25px;
+			}
+			.textLabel
+			{
+				float: left;
+				width: 150px;
+			}
+			#demand
+			{
+				width: 60%;
+				height: 40px;
+				border-radius: 4px;
+				border: 2px solid #ccc;
+			}
+			#message
+			{
+				resize:vertical;
+				width: 60%;
+				height: 200px;
+				border-radius: 4px;
+				border: 2px solid #ccc;
+			}
+			#send
+			{
+				margin-left: 30%;
+				margin-right: 20px;
+			}
+			#familyName_error, #phoneNumber_error, #email_error
+			{
+				color: red;
+				margin-left: 0%;
+			}
+			.alert
+			{
+				width: 60%;
+			}
+			footer
+			{
+				background: #405580;
+				width: 100%;
+				height: 25%;
+				
+			}
+			th
+			{
+				background-color:#A9A9A9;
+			}
+			th, td
+			{
+				border: 1px solid;
+				padding: 5px;
+			}
+			tr:nth-child(even)
+			{
+				background-color:#FFF8DC;
+			}
+	
+		</style>
+		
+		
+		
+	</head>
+	<body ng-app="jn-prestations_App" ng-controller="jn-prestations_Ctrl">
+		<div class="container">
+			<header>
+				
+				<nav class="navbar navbar-inverse navbar-fixed-top" style="background-color:#405580">
+					<div class="container-fluid">
+						<div class="navbar-header">
+							<a class="navbar-brand" href="#"></a>
+							<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>                        
+							</button>
+						</div>
+						<div class="collapse navbar-collapse" id="myNavbar">
+							<ul class="nav navbar-nav navbar-right">
+								<li id="indexMenu"><a href="#">Accueil</a></li>
+								<li id="servicesMenu"><a href="#">Services</a></li>
+								<li id="qualityMenu"><a href="#">Qualité</a></li>
+								<li id="contactMenu"><a href="#">Contact</a></li>
+							</ul>
+						</div>
+					</div>
+				</nav>
+				
+			</header>
+			
+			<span id="indexAnchor"></span>
+			
+			
+			 <div style="height:50px;"></div> 
+			<section>
+			
+				<div class="carousel slide" data-ride="carousel">
+					<div class="carousel-inner">
+						<div class="item active">
+							<img src="images/vacuum.jpg" alt="vacuum">
+						</div>
+					
+						<div class="item">
+							<img src="images/scraper.jpg" alt="scraper">
+						</div>
+					</div>
+				 </div>
+			
+			</section>
+			
+			<section>
+				
+					<div>
+						<h1>Qui sommes nous ?</h1>
+						<h4>Bienvenue sur le site officiel de <span class="corporate">JN PRESTATIONS </span> !</h4><br />
+						<p><span class="corporate">JN PRESTATIONS</span> est une entreprise toulousaine spécialisée dans le <span>nettoyage courant de bâtiments et l'entretien des espaces verts.</span></p>
+						<img src="images/lobby.jpeg" id="lobby" alt="image hall" style="margin-right:7px;"/>
+						<p class="p2">Nos clients sont essentiellement des syndics de copropriété, à qui nous proposons des prestations adaptées à leurs besoins; afin d'assurer un résultat parfait et une satisfaction entière.<br /><br />
+
+						Dans un cahier des charges, nous définirons ensemble les types de prestations adéquates, la fréquence souhaitée des interventions, ainsi que vos exigences en termes de qualité du service.<br /><br />
+						Le sérieux, la réactivité et une bonne connaissance du domaine du nettoyage et de l'entretien des espaces verts constituent nos principaux atouts.
+						</p>
+						<img src="images/hedge.jpeg" id="hedge" alt="image haie" style="margin-left:7px;"/>
+						<p>
+						
+						Notre entreprise intervient principalement sur la Haute Garonne (31) et les départements limitrophes: Ariège (09), Aveyron (12), Gers (32), Lot (46), Hautes-Pyrénées (65), Tarn 81, Tarn-et-Garonne (82).</p>
+						<div style="height:50px;"></div>
+					</div>
+				
+			</section>
+			
+			
+			<section id="servicesAnchor">
+			
+				 <div style="height:80px;"></div>  
+				<div>
+					<h1>Nos Prestations</h1>
+					<h4>Des services adaptées à vos attentes !</h4>
+				</div>
+				<div class="row">
+					<div class="col-dm-6">
+						<article class="servicesArticle" id="servicesArticleId">
+							<img class="img-circle" src="images/cleaning.png" id="cleaning" alt="image nettoyage"/>
+							<p>
+								◘ Balayage et lessivage des sols des halls, paliers et escaliers.<br />
+								◘ Nettoyage complet des cabines d'ascenseurs.<br />
+								◘ Dépoussiérage des boîtes aux lettres, plinthes, rampes d'escaliers.<br />
+								◘ Nettoyage des vitres.<br />
+								◘ Entrée et sortie des containers à poubelles pour le ramassage.<br />
+								◘ Remplacement des ampoules défectueuses.
+							</p>
+						</article>
+					</div>
+					<div class="col-dm-6">
+						<article class="servicesArticle">
+							<img class="img-circle" src="images/greenSpaces.png" id="greenSpaces" alt="image espaces verts"/>
+							<p>
+								♦ Tonte de pelouse.<br />
+								♦ Taille des haies.<br />
+								♦ Elagage, abattage des arbres.<br />
+								♦ Désherbage, débroussaillement.<br />
+								♦ Ramassages des feuilles mortes.
+							</p>
+						</article>
+					</div>
+				</div>
+
+			    <h1>Ils nous ont fait confiance:</h1> 
+				<div class="row">
+				
+				<div class="col-sm-2">
+				  </div>
+				
+				  <div class="col-sm-2">
+					<div class="thumbnail">
+						<img src="{{customersArray[0].logoUrl}}" alt="" style="width:100%">
+						<div class="caption">
+						  <p ng-bind="customersArray[0].getAdress()"></p>
+						</div>
+					</div>
+				  </div>
+				  
+				  <div class="col-sm-2">
+					<div class="thumbnail">				  
+						<img src="{{customersArray[1].logoUrl}}" alt="" style="width:100%">
+						<div class="caption">
+						  <p ng-bind="customersArray[1].getAdress()"></p>
+						</div>					  
+					</div>
+				  </div>
+				  
+				  <div class="col-sm-2">
+					<div class="thumbnail">
+						<img src="{{customersArray[2].logoUrl}}" alt="" style="width:100%;">
+						<div class="caption">
+						  <p ng-bind="customersArray[2].getAdress()"></p>
+						</div>
+					</div>
+				  </div>
+				  
+				   <div class="col-sm-2">
+					<div class="thumbnail">					  
+						<img src="{{customersArray[3].logoUrl}}" alt="" style="width:100%">
+						<div class="caption">
+						 <p ng-bind="customersArray[3].getAdress()"></p>
+						</div>
+					</div>
+				  </div>	
+				  
+				  <div class="col-sm-2">
+				  </div>
+				  
+				</div>
+			</section>
+				
+			
+			<!-- Quality -->
+			<section id="qualityAnchor">
+				
+					 <div style="height:80px;"></div>  
+					<div>
+						<h1>Notre Démarche Qualité</h1>
+						<h4>Votre satisfaction: notre priorité !</h4>
+					</div>
+					<div class="row">
+						<div class="col-dm-4">
+							<article class="qualityArticle">
+								<h5>Proximité</h5>
+								<br />
+								<p>Une entreprise à votre écoute, apte à vous conseiller et en mesure de vous faire partager son savoir-faire pour vous donner satisfaction.</p><br><br>
+								<img src="images/proximity.jpeg" id="proximity" alt="image proximité" />
+							</article class="qualityArticle">
+						</div>
+						<div class="col-dm-4">
+							<article class="qualityArticle">
+
+								<h5>Sens du service</h5>
+								<br />
+								<p>Nous nous engageons à vous amener et garder un niveau d'hygiène et d'environnement optimal et à réaliser dans les règles de l'art les prestations souscrites. </p><br>
+								<img src="images/quality.jpeg" id="quality" alt="image qualite" />
+							</article>
+						</div>
+						<div class="col-dm-4">
+							<article class="qualityArticle">
+
+								<h5>Ecologie</h5>
+								<br>
+								<p>Tous les produits d'entretien et le matériel utilisé sont sélectionnés avec soin, pour leur efficacité et répondent aux normes de sécurité et d'environnement en vigueur.<br /><br /> </p>
+								<img src="images/ecology.jpeg" id="ecology" alt="image écologie" />
+							</article>
+						</div>
+					</div>
+				
+			</section>
+						
+
+			<!-- contact -->
+			<section id="contactAnchor">
+				
+					<div style="height:80px;"></div> 
+					<div>
+						<h1>Nous Contacter</h1>
+						<img src="images/contact.jpg" id="contact" alt="image contact"/>
+						<p class="corporateInfos">
+							<span class="corporate">JN PRESTATIONS</span><br />
+							11 av du général De Gaulle<br>
+							Boite  D21<br />
+							31780 Castelginest<br />
+							Tel: 0625278041<br />
+							E-mail: contact@jn-prestations.fr	
+						</p>
+							
+						
+						<p class="warning">Les champs marqués d'une étoile rouge (<span class="redStar">*</span>) sont obligatoires !</p>
+
+					
+						<div>
+							<p>
+		
+								<form name="contactForm" novalidate> 
+									<fieldset>
+										<legend>Vos informations</legend><br />
+
+										<label for="familyName" class="textLabel">Nom<span class="redStar">*</span></label>
+										<input ng-model="user.familyName" ng-pattern="/^[a-z]+$/i" type="text" name="familyName"  class="textInput" maxlength="30" required/>
+										<span ng-show="contactForm.familyName.$dirty && contactForm.familyName.$invalid" class="error">
+											<span ng-show="contactForm.familyName.$error.required" ng-bind="firstNameRequired"></span>
+											<span ng-show="contactForm.familyName.$error.pattern" ng-bind="firstNameFormatInvalid"></span>
+										</span><br />
+										
+										<label for="firstName" class="textLabel">Prénom</label>
+										<input ng-model="user.firstName" type="text" id="firstName" name="firstName" class="textInput" maxlength="30"/><br />
+										
+										<label for="phoneNumber" class="textLabel">Téléphone<span class="redStar">*</span></label>
+										<input ng-model="user.phoneNumber" ng-pattern="/(\d[\s-]?)?[\(\[\s-]{0,2}?\d{3}[\)\]\s-]{0,2}?\d{3}[\s-]?\d{4}$/i" 
+										type="text"  name="phoneNumber" class="textInput" maxlength="10" required/>
+										<span ng-show="contactForm.phoneNumber.$dirty && contactForm.phoneNumber.$invalid" class="error">
+											<span ng-show="contactForm.phoneNumber.$error.required" ng-bind="phoneNumberRequired"></span>
+											<span ng-show="contactForm.phoneNumber.$error.pattern" ng-bind="phoneNumberFormatInvalid"></span>
+										</span><br />
+										
+										
+										<label for="email"  class="textLabel">Email<span class="redStar">*</span></label>
+										<input ng-model="user.email" ng-pattern="/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i"
+											   type="text"  name="email" required class="textInput" />
+										<span ng-show="contactForm.email.$dirty && contactForm.email.$invalid" class="error">
+											<span ng-show="contactForm.email.$error.required" ng-bind="emailRequired"></span>
+											<span ng-show="contactForm.email.$error.pattern" ng-bind="emailFormatInvalid"></span>
+										</span><br /><br />
+										
+										
+										Vous êtes:<br />
+										<input ng-model="user.status" type="radio" name="status" class="corporate" value="une entreprise" checked />
+										<label for="corporate">une entreprise</label><br  class="corporate"/>	
+										<input ng-model="user.status" type="radio" name="status" class="corporate" value="un particulier"/>
+										<label for="individual">un particulier</label><br /><br />
+
+										<label for="purpose">Quel est l'objet de votre demande ?</label><br />
+										<select ng-model="user.purpose" ng-options="purpose for purpose in purposes" id="demand" name="purpose"> 
+										</select><br /><br />
+										
+										<label for="message">Votre message:</label><br />
+										<textarea ng-model="user.message" name="message" id="message" ></textarea>
+										<p></p>
+										<div ng-if="success" class="alert alert-success alert-dismissible" role="alert">
+											<button type="button" class="close" data-dismiss="alert" aria-label="close">&times;</button>
+											{{successOrFailureMessage}}
+										</div>
+										<div ng-if="failure" class="alert alert-danger alert-dismissible" role="alert">
+											<button type="button" class="close" data-dismiss="alert" aria-label="close">&times;</button>
+											{{successOrFailureMessage}}
+										</div>
+										<button ng-disabled="contactForm.$invalid || contactForm.$pristine" ng-click="submit_form()" id="send" class="btn btn-success">Envoyer</button>							
+										<button ng-disabled="contactForm.$pristine"  ng-click="reset_form()" class="btn btn-warning">Annuler</button>
+										
+									</fieldset>
+								</form>
+							</p>
+						</div>
+						<div id="map" style="width:100%;height:300px;"></div>
+						
+						</div>
+					
+			</section>
+			<section>
+				<div>
+					
+					<p>
+					<form ng-show="contactsTableCheckbox">
+						Show the contacts table
+						<input type="checkbox" ng-model="showTable"/>
+					</form>
+					<table ng-show="showTable" class="table table-bordered">
+						<thead>
+							<tr>
+								<th class="text-center">DATE</th>
+								<th class="text-center">FAMILLY NAME</th>
+								<th class="text-center">FIRST NAME</th>
+								<th class="text-center">PHONE NUMBER</th>
+								<th class="text-center">EMAIL</th>
+								<th class="text-center">STATUS</th>
+								<th class="text-center">PURPOSE</th>
+								<th class="text-center">MESSAGE</th>
+								<th class="text-center"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="user in users" >
+								<td>{{user.date}}</td>
+								<td>{{user.familyName}}</td>
+								<td>{{user.firstName}}</td>
+								<td>{{user.phoneNumber}}</td>
+								<td>{{user.email}}</td>
+								<td>{{user.status}}</td>
+								<td>{{user.purpose}}</td>
+								<td>{{user.message}}</td>
+								<td><button type="button" ng-click="deleteContact(user.position)">delete</button></td>
+							</tr>
+						</tbody>
+					</table>
+				</p>
+				</div>
+				
+				 <div class="modal  fade" id="adminModal">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h3 class="modal-title">Réservé à l'administrateur</h3>
+							</div>
+							<div class="modal-body">
+								<form>
+									<p>
+										<input ng-model="admin.login" type="text" style = "border-bottom: 3px solid gray" placeholder="login"/><br />
+										<input ng-model="admin.password" type="password" style = "border-bottom: 3px solid gray" placeholder="mot de passe"/><br />
+									</p>
+									<button ng-click="process_adminForm()" type="button" class="btn btn-success">Valider</button>
+									<button ng-click="reset_adminForm()" type="button" class="btn btn-warning">Annuler</button>
+								</form>
+							</div>
+							<div class="modal-footer">
+								<button class="btn btn-basic" data-dismiss="modal" id="closeAdminForm">Fermer</button>
+							</div>
+						</div>  
+					</div>
+				</div>
+			</section>
+			
+			<footer>				
+					<div class="row" style="color:gray;">
+						<div  class="col-sm-2 text-left" ><br />
+							<button data-toggle="popover"  title="Vous pouvez me contacter à l'adresse suivante:" data-trigger="focus" data-placement="top" data-content="diawcastel@gmail.com" >site crée par DIAW Abdou</button>
+						</div>
+						<div  class="col-sm-6 text-center"><br />
+							© Copyright 2014 <br /> JN PRESTATIONS: 522 703 347 RCS Toulouse
+						</div>
+						<div  class="col-sm-3"><br />
+							<div class="row">
+								
+								<div  class="col-sm-6">
+									<img src="images/facebook.png" style="margin-bottom:5px;"/> Facebook<br />
+									<img src="images/twitter.png" style="margin-bottom:5px;"/>  Twitter<br />
+									<img src="images/instagram.png" />  Instagram
+								</div>
+								<div  class="col-sm-6">
+									<img src="images/linkedin.png" style="margin-bottom:5px;" />  Linkedin<br />
+									<img src="images/google-plus.png" style="margin-bottom:5px;"/>  Google+<br />
+									<img src="images/rss.png" />  RSS
+								</div>
+							</div>								
+						</div>
+						<div  class="col-sm-1 text-right"><br />
+							<button data-toggle="modal" data-target="#adminModal">admin</button>
+						</div>
+					</div>
+				
+			</footer>
+		
+		</div>
+	</body>
+</html>
